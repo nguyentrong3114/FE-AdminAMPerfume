@@ -37,7 +37,7 @@ export default function Products() {
       title: 'Tên sản phẩm',
       dataIndex: 'name',
       key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name)
+      sorter: (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name)
     },
     {
       title: 'Giá',

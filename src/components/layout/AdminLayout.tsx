@@ -8,7 +8,14 @@ import {
     SettingOutlined,
     LogoutOutlined,
     MenuFoldOutlined,
-    MenuUnfoldOutlined
+    MenuUnfoldOutlined,
+    BarChartOutlined,
+    FileOutlined,
+    TeamOutlined,
+    MessageOutlined,
+    GiftOutlined,
+    CalendarOutlined,
+    TagOutlined
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
@@ -23,6 +30,13 @@ const menuItems = [
     { label: "Products", key: "/products", icon: <ShoppingOutlined /> },
     { label: "Users", key: "/users", icon: <UserOutlined /> },
     { label: "Orders", key: "/orders", icon: <ShoppingCartOutlined /> },
+    { label: "Analytics", key: "/analytics", icon: <BarChartOutlined /> },
+    { label: "Reports", key: "/reports", icon: <FileOutlined /> },
+    { label: "Teams", key: "/teams", icon: <TeamOutlined /> },
+    { label: "Messages", key: "/messages", icon: <MessageOutlined /> },
+    { label: "Promotions", key: "/promotions", icon: <GiftOutlined /> },
+    { label: "Calendar", key: "/calendar", icon: <CalendarOutlined /> },
+    { label: "Categories", key: "/categories", icon: <TagOutlined /> }
 ];
 
 const userMenuItems = [
@@ -49,7 +63,7 @@ interface AdminLayoutProps {
     toggleTheme: () => void;
 }
 
-export default function AdminLayout({ children, isDark, toggleTheme }: AdminLayoutProps) {
+export default function AdminLayout({ isDark, toggleTheme }: AdminLayoutProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const { token } = useToken();

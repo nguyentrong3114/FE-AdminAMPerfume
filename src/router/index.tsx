@@ -8,6 +8,13 @@ import SecondPasswordPage from "@/pages/auth/SecondPasswordPage";
 import ErrorPage from "@/pages/ErrorPage";
 import HomeLayout from "@/components/layout/HomeLayout";
 import OrderPage from "@/pages/OrderPage";
+import CategoryPage from "@/pages/CategoriesPage"
+import TeamsPage from "@/pages/TeamsPage";
+import MessagesPage from "@/pages/MessagesPage";
+import PromotionsPage from "@/pages/PromotionsPage";
+import CalendarPage from "@/pages/CalendarPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import ReportsPage from "@/pages/ReportsPage";
 export default function AppRoutes({
     isDark,
     toggleTheme,
@@ -26,6 +33,13 @@ export default function AppRoutes({
                 <Route path="products" element={<Products />} />
                 <Route path="users" element={<Users />} />
                 <Route path="orders" element={<OrderPage />} />
+                <Route path="categories" element={<CategoryPage />} />
+                <Route path="teams" element={<TeamsPage />} />
+                <Route path="messages" element={<MessagesPage />} />
+                <Route path="promotions" element={<PromotionsPage />} />
+                <Route path="calendar" element={<CalendarPage />} />
+                <Route path="reports" element={<ReportsPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />      
             </Route>
             <Route element={<HomeLayout />}>
                 <Route path="/auth/second-password" element={<SecondPasswordPage />} />

@@ -1,60 +1,43 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Table, Input, DatePicker, Select, Space } from 'antd';
+import { Table, Input, DatePicker, Select, Space, Button } from 'antd';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Line } from '@ant-design/plots';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
+import { OrderModal } from '@/components/modals/OrderModal';
 
 const { RangePicker } = DatePicker;
 
-const orderColumns = [
-  {
-    title: 'Mã đơn hàng',
-    dataIndex: 'id',
-    key: 'id',
-  },
-  {
-    title: 'Tên khách hàng',
-    dataIndex: 'customerName',
-    key: 'customerName',
-  },
-  {
-    title: 'Số điện thoại',
-    dataIndex: 'phoneNumber',
-    key: 'phoneNumber',
-  },
-  {
-    title: 'Địa chỉ',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
-    title: 'Trạng thái',
-    dataIndex: 'status',
-    key: 'status',
-  },
-  {
-    title: 'Tổng tiền',
-    dataIndex: 'total',
-    key: 'total',
-  }
-];
+interface Order {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingAddress: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  notes?: string;
+  total: string;
+}
 
-const mockData = [
+type OrderFormData = Omit<Order, 'id' | 'total'>;
+
+const mockData: Order[] = [
   {
     id: 'DH001',
     customerName: 'Nguyễn Văn A',
-    phoneNumber: '0123456789',
-    address: '123 Đường ABC, Phường XYZ, Quận 1, TP.HCM',
-    status: 'Đang xử lý',
+    customerEmail: 'nguyenvana@example.com',
+    customerPhone: '0123456789',
+    shippingAddress: '123 Đường ABC, Phường XYZ, Quận 1, TP.HCM',
+    status: 'processing',
     total: '1.500.000đ'
   },
   {
     id: 'DH002', 
     customerName: 'Trần Thị B',
-    phoneNumber: '0987654321',
-    address: '456 Đường DEF, Phường UVW, Quận 2, TP.HCM',
-    status: 'Đã giao hàng',
+    customerEmail: 'tranthib@example.com',
+    customerPhone: '0987654321',
+    shippingAddress: '456 Đường DEF, Phường UVW, Quận 2, TP.HCM',
+    status: 'delivered',
     total: '2.300.000đ'
   }
 ];
@@ -68,16 +51,109 @@ const chartData = [
 ];
 
 export default function OrderPage() {
-  const [orders] = useState(mockData);
+  const [orders] = useState<Order[]>(mockData);
   const [searchText, setSearchText] = useState('');
   const [status, setStatus] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<OrderFormData | undefined>(undefined);
+
+  const handleEdit = (order: Order) => {
+    const formData: OrderFormData = {
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      customerPhone: order.customerPhone,
+      shippingAddress: order.shippingAddress,
+      status: order.status,
+      notes: order.notes
+    };
+    setSelectedOrder(formData);
+    setIsModalOpen(true);
+  };
+
+  const handleAdd = () => {
+    setSelectedOrder(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (data: OrderFormData) => {
+    setIsLoading(true);
+    try {
+      // Xử lý logic thêm/cập nhật
+      console.log('Data submitted:', data);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const orderColumns = [
+    {
+      title: 'Mã đơn hàng',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Tên khách hàng',
+      dataIndex: 'customerName',
+      key: 'customerName',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'customerEmail',
+      key: 'customerEmail',
+    },
+    {
+      title: 'Số điện thoại',
+      dataIndex: 'customerPhone',
+      key: 'customerPhone',
+    },
+    {
+      title: 'Địa chỉ',
+      dataIndex: 'shippingAddress',
+      key: 'shippingAddress',
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        const statusMap: Record<string, string> = {
+          pending: 'Chờ xử lý',
+          processing: 'Đang xử lý',
+          shipped: 'Đang giao hàng',
+          delivered: 'Đã giao hàng',
+          cancelled: 'Đã hủy'
+        };
+        return statusMap[status] || status;
+      }
+    },
+    {
+      title: 'Tổng tiền',
+      dataIndex: 'total',
+      key: 'total',
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      render: (_: unknown, record: Order) => (
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          onClick={() => handleEdit(record)}
+        />
+      ),
+    }
+  ];
 
   const config = {
     data: chartData,
     xField: 'date',
     yField: 'value',
     point: {
-      size: 5,
+      size: 2,
       shape: 'diamond',
     },
     label: {
@@ -90,7 +166,7 @@ export default function OrderPage() {
   const filteredOrders = orders.filter(order => {
     const matchSearch = order.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
                        order.id.toLowerCase().includes(searchText.toLowerCase()) ||
-                       order.phoneNumber.includes(searchText);
+                       order.customerPhone.includes(searchText);
     const matchStatus = status === 'all' || order.status === status;
     return matchSearch && matchStatus;
   });
@@ -103,7 +179,7 @@ export default function OrderPage() {
         transition={{ duration: 0.5 }}
       >
         <Card className="border-none shadow-lg rounded-xl mb-6">
-          <CardHeader className="space-y-2 p-6">
+          <CardHeader className="space-y-2 p-2">
             <CardTitle className="text-2xl font-bold">Thống kê đơn hàng</CardTitle>
             <CardDescription>
               Biểu đồ số lượng đơn hàng theo tháng
@@ -136,11 +212,21 @@ export default function OrderPage() {
                 onChange={value => setStatus(value)}
                 options={[
                   { value: 'all', label: 'Tất cả trạng thái' },
-                  { value: 'Đang xử lý', label: 'Đang xử lý' },
-                  { value: 'Đã giao hàng', label: 'Đã giao hàng' },
+                  { value: 'pending', label: 'Chờ xử lý' },
+                  { value: 'processing', label: 'Đang xử lý' },
+                  { value: 'shipped', label: 'Đang giao hàng' },
+                  { value: 'delivered', label: 'Đã giao hàng' },
+                  { value: 'cancelled', label: 'Đã hủy' },
                 ]}
               />
               <RangePicker />
+              <Button 
+                type="primary" 
+                icon={<PlusOutlined />}
+                onClick={handleAdd}
+              >
+                Thêm đơn hàng
+              </Button>
             </Space>
             <Table 
               columns={orderColumns}
@@ -150,6 +236,14 @@ export default function OrderPage() {
             />
           </CardContent>
         </Card>
+
+        <OrderModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialData={selectedOrder}
+          isLoading={isLoading}
+        />
       </motion.div>
     </div>
   );
