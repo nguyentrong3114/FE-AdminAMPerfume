@@ -6,7 +6,7 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <AppRoutes isDark={false} toggleTheme={() => {}} />
+        <AppRoutes isDark={false} toggleTheme={() => { }} />
       </BrowserRouter>
     </>
   );

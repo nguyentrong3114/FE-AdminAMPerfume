@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -45,42 +45,42 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4 ">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full max-w-md"
+                className="w-full max-w-3xl"
             >
-                <Card className="border-none shadow-lg">
-                    <CardHeader className="space-y-1">
-                        <CardTitle className="text-2xl font-bold text-center">Đăng nhập</CardTitle>
-                        <CardDescription className="text-center">
+                <Card className="border-none shadow-2xl rounded-2xl overflow-hidden">
+                    <CardHeader className="space-y-2 p-8"> 
+                        <CardTitle className="text-3xl font-bold text-center">Đăng nhập</CardTitle> 
+                        <CardDescription className="text-center text-lg"> 
                             Nhập thông tin đăng nhập của bạn để tiếp tục
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <CardContent className="px-8 pb-8">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6"> 
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email" className="text-lg">Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
                                     placeholder="name@example.com"
                                     {...register('email')}
-                                    className={errors.email ? 'border-red-500' : ''}
+                                    className={`${errors.email ? 'border-red-500' : ''} h-12 text-lg rounded-xl`} 
                                 />
                                 {errors.email && (
                                     <p className="text-sm text-red-500">{errors.email.message}</p>
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="password">Mật khẩu</Label>
+                                <Label htmlFor="password" className="text-lg">Mật khẩu</Label>
                                 <Input
                                     id="password"
                                     type="password"
                                     {...register('password')}
-                                    className={errors.password ? 'border-red-500' : ''}
+                                    className={`${errors.password ? 'border-red-500' : ''} h-12 text-lg rounded-xl`} 
                                 />
                                 {errors.password && (
                                     <p className="text-sm text-red-500">{errors.password.message}</p>
@@ -88,12 +88,12 @@ export default function LoginPage() {
                             </div>
                             <Button
                                 type="submit"
-                                className="w-full"
+                                className="w-full h-12 text-lg rounded-xl border-2" 
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
                                     <>
-                                        <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                                        <Icons.spinner className="mr-2 h-5 w-5 animate-spin" /> 
                                         Đang đăng nhập...
                                     </>
                                 ) : (

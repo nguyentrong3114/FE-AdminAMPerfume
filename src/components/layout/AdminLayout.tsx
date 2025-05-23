@@ -10,7 +10,7 @@ import {
     MenuFoldOutlined,
     MenuUnfoldOutlined
 } from "@ant-design/icons";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import React from "react";
@@ -127,7 +127,7 @@ export default function AdminLayout({ children, isDark, toggleTheme }: AdminLayo
                         minHeight: 280
                     }}
                 >
-                    {children}
+                    <Outlet />  
                 </Content>
             </Layout>
         </Layout>
