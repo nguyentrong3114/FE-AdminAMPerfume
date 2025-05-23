@@ -21,6 +21,7 @@ import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import React from "react";
+import { NotificationDropdown } from "../notifications/NotificationDropdown";
 
 const { Header, Content, Sider } = Layout;
 const { useToken } = theme;
@@ -36,9 +37,30 @@ const menuItems = [
     { label: "Messages", key: "/messages", icon: <MessageOutlined /> },
     { label: "Promotions", key: "/promotions", icon: <GiftOutlined /> },
     { label: "Calendar", key: "/calendar", icon: <CalendarOutlined /> },
-    { label: "Categories", key: "/categories", icon: <TagOutlined /> }
+    { label: "Categories", key: "/categories", icon: <TagOutlined /> },
+    { label: "Notifications", key: "/notifications", icon: <BellOutlined /> }
 ];
-
+const notifications = [{
+    id: 1,
+    title: "Đơn hàng mới",
+    description: "Bạn có đơn hàng mới #12345",
+    time: "5 phút trước",
+    type: "success"
+},
+{
+    id: 2,
+    title: "Cảnh báo tồn kho",
+    description: "Sản phẩm iPhone 13 Pro sắp hết hàng",
+    time: "1 giờ trước",
+    type: "warning"
+},
+{
+    id: 3,
+    title: "Cập nhật hệ thống",
+    description: "Hệ thống sẽ được bảo trì vào 22:00",
+    time: "2 giờ trước",
+    type: "info"
+}]
 const userMenuItems = [
     {
         key: 'profile',
@@ -68,7 +90,7 @@ export default function AdminLayout({ isDark, toggleTheme }: AdminLayoutProps) {
     const location = useLocation();
     const { token } = useToken();
     const [collapsed, setCollapsed] = useState(false);
-    
+
     return (
         <Layout style={{ minHeight: "100vh" }}>
             <Sider
@@ -81,8 +103,10 @@ export default function AdminLayout({ isDark, toggleTheme }: AdminLayoutProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                 }}
             >
-                <div className="flex items-center justify-center py-6">
-                    <span className={`ml-2 text-xl font-bold ${collapsed ? 'hidden' : ''}`}>AM-Admin</span>
+                <div className={`flex justify-center items-center ${collapsed ? 'hidden' : ''}`}>
+                    <span className="my-4 text-2xl font-bold bg-gradient-to-r from-pink-500 to-cyan-500 bg-clip-text text-transparent">
+                        AM-Admin
+                    </span>
                 </div>
                 <Menu
                     mode="inline"
@@ -119,9 +143,7 @@ export default function AdminLayout({ isDark, toggleTheme }: AdminLayoutProps) {
                         >
                             {isDark ? "Light Mode" : "Dark Mode"}
                         </button>
-                        <Badge count={5} size="small">
-                            <BellOutlined style={{ fontSize: '20px' }} className="cursor-pointer" />
-                        </Badge>
+                        <NotificationDropdown notifications={notifications} />
 
                         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
                             <div className="flex items-center cursor-pointer">
@@ -131,7 +153,6 @@ export default function AdminLayout({ isDark, toggleTheme }: AdminLayoutProps) {
                         </Dropdown>
                     </div>
                 </Header>
-
                 <Content
                     style={{
                         margin: '24px',
@@ -141,7 +162,7 @@ export default function AdminLayout({ isDark, toggleTheme }: AdminLayoutProps) {
                         minHeight: 280
                     }}
                 >
-                    <Outlet />  
+                    <Outlet />
                 </Content>
             </Layout>
         </Layout>

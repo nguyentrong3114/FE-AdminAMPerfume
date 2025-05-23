@@ -15,6 +15,7 @@ import PromotionsPage from "@/pages/PromotionsPage";
 import CalendarPage from "@/pages/CalendarPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import ReportsPage from "@/pages/ReportsPage";
+import NotificationPage from "@/pages/NotificationPage";
 export default function AppRoutes({
     isDark,
     toggleTheme,
@@ -39,7 +40,8 @@ export default function AppRoutes({
                 <Route path="promotions" element={<PromotionsPage />} />
                 <Route path="calendar" element={<CalendarPage />} />
                 <Route path="reports" element={<ReportsPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />      
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="notifications" element={<NotificationPage />} />
             </Route>
             <Route element={<HomeLayout />}>
                 <Route path="/auth/second-password" element={<SecondPasswordPage />} />
