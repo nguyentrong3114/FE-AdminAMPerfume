@@ -1,88 +1,85 @@
-import { Table, Button, Space, Input, Card, Modal, Form, Select, InputNumber } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import {
+  Table,
+  Button,
+  Space,
+  Input,
+  Card,
+  Modal,
+  Form,
+  Select,
+  InputNumber,
+} from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import ProductService from "@/services/productService";
+import { useQuery } from "@tanstack/react-query";
+import type { ProductListResponse, Product } from "@/types/Product";
 
 export default function Products() {
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const dataSource = [
-    {
-      key: '1',
-      name: 'iPhone 13 Pro',
-      price: 999,
-      stock: 50,
-      category: 'Electronics',
-      status: 'In Stock'
-    },
-    {
-      key: '2', 
-      name: 'MacBook Pro',
-      price: 1299,
-      stock: 30,
-      category: 'Electronics',
-      status: 'In Stock'
-    },
-    {
-      key: '3',
-      name: 'AirPods Pro',
-      price: 249,
-      stock: 0,
-      category: 'Electronics', 
-      status: 'Out of Stock'
-    }
-  ];
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+
+  const { data, isLoading } = useQuery<ProductListResponse>({
+    queryKey: ["products", pagination.current, pagination.pageSize, searchText],
+    queryFn: () =>
+      ProductService.getProduct(
+        pagination.current,
+        pagination.pageSize,
+        searchText
+      ),
+    keepPreviousData: true,
+    staleTime: 2000,
+  });
 
   const columns = [
     {
-      title: 'Tên sản phẩm',
-      dataIndex: 'name',
-      key: 'name',
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name)
+      title: "Tên sản phẩm",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'Giá',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price: number) => `$${price}`,
-      sorter: (a: any, b: any) => a.price - b.price
+      title: "Danh mục",
+      dataIndex: "category",
+      key: "category",
     },
     {
-      title: 'Tồn kho',
-      dataIndex: 'stock',
-      key: 'stock',
-      sorter: (a: any, b: any) => a.stock - b.stock
+      title: "Số biến thể",
+      dataIndex: "variants",
+      key: "variants",
+      render: (variants: Product["variants"]) => variants.length,
+      sorter: (a: Product, b: Product) => a.variants.length - b.variants.length,
     },
     {
-      title: 'Danh mục',
-      dataIndex: 'category',
-      key: 'category',
-      filters: [
-        { text: 'Electronics', value: 'Electronics' }
-      ],
-      onFilter: (value: any, record: any) => record.category === value
+      title: "Thương hiệu",
+      dataIndex: "brandName",
+      key: "brandName",
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status'
+      title: "Sao",
+      dataIndex: "star",
+      key: "star",
+      sorter: (a: Product, b: Product) => a.star - b.star,
     },
     {
-      title: 'Thao tác',
-      key: 'action',
+      title: "Thao tác",
+      key: "action",
       render: () => (
         <Space size="middle">
           <Button type="link">Sửa</Button>
-          <Button type="link" danger>Xóa</Button>
+          <Button type="link" danger>
+            Xóa
+          </Button>
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
   const handleOk = () => {
-    form.validateFields().then(values => {
-      console.log('Form values:', values);
+    form.validateFields().then((values) => {
+      console.log("Form values:", values);
       setIsModalVisible(false);
       form.resetFields();
     });
@@ -97,24 +94,38 @@ export default function Products() {
     <div className="p-6">
       <Card>
         <div className="flex justify-between mb-4">
-          <Input 
+          <Input
             placeholder="Tìm kiếm sản phẩm..."
             prefix={<SearchOutlined />}
             style={{ width: 300 }}
             value={searchText}
-            onChange={e => setSearchText(e.target.value)}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+              setPagination((prev) => ({ ...prev, current: 1 }));
+            }}
           />
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalVisible(true)}
+          >
             Thêm sản phẩm mới
           </Button>
         </div>
 
-        <Table 
-          dataSource={dataSource.filter(item => 
-            item.name.toLowerCase().includes(searchText.toLowerCase())
-          )}
+        <Table
+          dataSource={data?.items || []}
           columns={columns}
-          pagination={{ pageSize: 10 }}
+          loading={isLoading}
+          rowKey="id"
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: data?.totalItems || 0,
+            onChange: (page, pageSize) => {
+              setPagination({ current: page, pageSize });
+            },
+          }}
         />
       </Card>
 
@@ -125,50 +136,51 @@ export default function Products() {
         onCancel={handleCancel}
         width={600}
       >
-        <Form
-          form={form}
-          layout="vertical"
-        >
+        <Form form={form} layout="vertical">
           <Form.Item
             name="name"
             label="Tên sản phẩm"
-            rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm' }]}
+            rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="price"
             label="Giá"
-            rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
+            rules={[{ required: true, message: "Vui lòng nhập giá" }]}
           >
             <InputNumber
-              style={{ width: '100%' }}
-              formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={value => value!.replace(/\$\s?|(,*)/g, '')}
+              style={{ width: "100%" }}
+              formatter={(value) =>
+                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
             />
           </Form.Item>
           <Form.Item
             name="stock"
             label="Tồn kho"
-            rules={[{ required: true, message: 'Vui lòng nhập số lượng tồn kho' }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập số lượng tồn kho" },
+            ]}
           >
-            <InputNumber style={{ width: '100%' }} min={0} />
+            <InputNumber style={{ width: "100%" }} min={0} />
           </Form.Item>
           <Form.Item
             name="category"
             label="Danh mục"
-            rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]}
+            rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
           >
             <Select>
-              <Select.Option value="Electronics">Electronics</Select.Option>
-              <Select.Option value="Clothing">Clothing</Select.Option>
-              <Select.Option value="Books">Books</Select.Option>
+              <Select.Option value="Nước hoa nam">Nước hoa nam</Select.Option>
+              <Select.Option value="Nước hoa nữ">Nước hoa nữ</Select.Option>
+              <Select.Option value="Unisex">Unisex</Select.Option>
             </Select>
           </Form.Item>
           <Form.Item
             name="status"
             label="Trạng thái"
-            rules={[{ required: true, message: 'Vui lòng chọn trạng thái' }]}
+            rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
           >
             <Select>
               <Select.Option value="In Stock">In Stock</Select.Option>

@@ -1,9 +1,17 @@
 import api from "@/api/index"
-
+import type { ProductListResponse } from "@/types/Product";
 const ProductService = {
-    getProducts: async () => {
-        const response = await api.get('/products');
-        return response.data;
+    async getProduct(page = 1, size = 10, search = ""): Promise<ProductListResponse> {
+        const response = await api.get("/products", {
+            params: { page, size, search },
+        });
+
+        const data = response.data;
+        console.log(data)
+        return {
+            items: data.items ?? [],
+            totalItems: data.totalItems ?? 0,
+        };
     },
 
     getProductById: async (id: string) => {
