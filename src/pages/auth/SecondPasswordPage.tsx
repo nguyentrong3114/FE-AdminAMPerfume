@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
+import gsap from 'gsap';
 
 const secondPasswordSchema = z.object({
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
@@ -32,6 +32,14 @@ export default function SecondPasswordPage() {
     resolver: zodResolver(secondPasswordSchema),
   });
 
+  useEffect(() => {
+    gsap.from('.card-container', {
+      opacity: 0,
+      y: 20,
+      duration: 0.5
+    });
+  }, []);
+
   const onSubmit = async (data: SecondPasswordFormData) => {
     try {
       setIsLoading(true);
@@ -49,12 +57,7 @@ export default function SecondPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-3xl"
-      >
+      <div className="w-full max-w-3xl card-container">
         <Card className="border-none shadow-2xl rounded-2xl overflow-hidden">
           <CardHeader className="space-y-2 p-8">
             <CardTitle className="text-3xl font-bold text-center">Mật khẩu cấp 2</CardTitle>
@@ -105,7 +108,7 @@ export default function SecondPasswordPage() {
             </form>
           </CardContent>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }

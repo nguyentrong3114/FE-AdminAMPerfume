@@ -1,56 +1,62 @@
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import { Button as AntButton } from "antd"
+import type { ButtonProps as AntButtonProps } from "antd"
 import { cn } from "@/lib/utils"
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
+type CustomVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+export interface ButtonProps extends Omit<AntButtonProps, 'type'> {
+  customVariant?: CustomVariant
+  type?: 'primary' | 'default' | 'dashed' | 'text' | 'link'
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+  ({ className, customVariant = 'default', type, ...props }, ref) => {
+    const getButtonType = () => {
+      switch (customVariant) {
+        case 'destructive':
+          return 'primary'
+        case 'outline':
+          return 'default'
+        case 'secondary':
+          return 'default'
+        case 'ghost':
+          return 'text'
+        case 'link':
+          return 'link'
+        default:
+          return type || 'primary'
+      }
+    }
+
+    const getButtonClassName = () => {
+      switch (customVariant) {
+        case 'destructive':
+          return 'bg-red-500 hover:bg-red-600 text-white'
+        case 'outline':
+          return 'border border-gray-300 hover:bg-gray-100'
+        case 'secondary':
+          return 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+        case 'ghost':
+          return 'hover:bg-gray-100'
+        case 'link':
+          return 'text-blue-500 hover:text-blue-600'
+        default:
+          return ''
+      }
+    }
+
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+      <AntButton
         ref={ref}
+        type={getButtonType()}
+        className={cn(getButtonClassName(), className)}
         {...props}
       />
     )
   }
 )
+
 Button.displayName = "Button"
 
-export { Button, buttonVariants } 
+export { Button } 

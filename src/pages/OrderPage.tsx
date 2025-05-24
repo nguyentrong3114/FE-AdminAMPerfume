@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Table, Input, DatePicker, Select, Space, Button } from 'antd';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Table, Input, DatePicker, Select, Space, Button, Card } from 'antd';
 import { Line } from '@ant-design/plots';
 import { SearchOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { OrderModal } from '@/components/modals/OrderModal';
+import gsap from 'gsap';
 
 const { RangePicker } = DatePicker;
 
@@ -57,6 +56,15 @@ export default function OrderPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderFormData | undefined>(undefined);
+
+  useEffect(() => {
+    gsap.from('.page-content', {
+      opacity: 0,
+      y: 20,
+      duration: 0.5,
+      ease: 'power2.out'
+    });
+  }, []);
 
   const handleEdit = (order: Order) => {
     const formData: OrderFormData = {
@@ -173,68 +181,49 @@ export default function OrderPage() {
 
   return (
     <div className="p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="border-none shadow-lg rounded-xl mb-6">
-          <CardHeader className="space-y-2 p-2">
-            <CardTitle className="text-2xl font-bold">Thống kê đơn hàng</CardTitle>
-            <CardDescription>
-              Biểu đồ số lượng đơn hàng theo tháng
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Line {...config} />
-          </CardContent>
+      <div className="page-content">
+        <Card title="Thống kê đơn hàng" className="mb-6">
+          <p className="text-gray-500 mb-4">Biểu đồ số lượng đơn hàng theo tháng</p>
+          <Line {...config} />
         </Card>
 
-        <Card className="border-none shadow-lg rounded-xl">
-          <CardHeader className="space-y-2 p-6">
-            <CardTitle className="text-2xl font-bold">Quản lý đơn hàng</CardTitle>
-            <CardDescription>
-              Xem và quản lý tất cả đơn hàng của khách hàng
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Space className="mb-4" size="large">
-              <Input
-                placeholder="Tìm kiếm theo mã, tên, SĐT..."
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-                style={{ width: 300 }}
-              />
-              <Select
-                defaultValue="all"
-                style={{ width: 200 }}
-                onChange={value => setStatus(value)}
-                options={[
-                  { value: 'all', label: 'Tất cả trạng thái' },
-                  { value: 'pending', label: 'Chờ xử lý' },
-                  { value: 'processing', label: 'Đang xử lý' },
-                  { value: 'shipped', label: 'Đang giao hàng' },
-                  { value: 'delivered', label: 'Đã giao hàng' },
-                  { value: 'cancelled', label: 'Đã hủy' },
-                ]}
-              />
-              <RangePicker />
-              <Button 
-                type="primary" 
-                icon={<PlusOutlined />}
-                onClick={handleAdd}
-              >
-                Thêm đơn hàng
-              </Button>
-            </Space>
-            <Table 
-              columns={orderColumns}
-              dataSource={filteredOrders}
-              pagination={{ pageSize: 10 }}
-              className="w-full"
+        <Card title="Quản lý đơn hàng">
+          <p className="text-gray-500 mb-4">Xem và quản lý tất cả đơn hàng của khách hàng</p>
+          <Space className="mb-4" size="large">
+            <Input
+              placeholder="Tìm kiếm theo mã, tên, SĐT..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              style={{ width: 300 }}
             />
-          </CardContent>
+            <Select
+              defaultValue="all"
+              style={{ width: 200 }}
+              onChange={value => setStatus(value)}
+              options={[
+                { value: 'all', label: 'Tất cả trạng thái' },
+                { value: 'pending', label: 'Chờ xử lý' },
+                { value: 'processing', label: 'Đang xử lý' },
+                { value: 'shipped', label: 'Đang giao hàng' },
+                { value: 'delivered', label: 'Đã giao hàng' },
+                { value: 'cancelled', label: 'Đã hủy' },
+              ]}
+            />
+            <RangePicker />
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+            >
+              Thêm đơn hàng
+            </Button>
+          </Space>
+          <Table 
+            columns={orderColumns}
+            dataSource={filteredOrders}
+            pagination={{ pageSize: 10 }}
+          />
         </Card>
 
         <OrderModal
@@ -244,7 +233,7 @@ export default function OrderPage() {
           initialData={selectedOrder}
           isLoading={isLoading}
         />
-      </motion.div>
+      </div>
     </div>
   );
 }

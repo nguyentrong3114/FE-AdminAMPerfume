@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -46,10 +45,7 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 ">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+            <div
                 className="w-full max-w-3xl"
             >
                 <Card className="border-none shadow-2xl rounded-2xl overflow-hidden">
@@ -103,7 +99,7 @@ export default function LoginPage() {
                         </form>
                     </CardContent>
                 </Card>
-            </motion.div>
+            </div>
         </div>
     );
 }
