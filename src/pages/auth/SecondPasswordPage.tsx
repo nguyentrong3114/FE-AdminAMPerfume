@@ -32,13 +32,7 @@ export default function SecondPasswordPage() {
     resolver: zodResolver(secondPasswordSchema),
   });
 
-  useEffect(() => {
-    gsap.from('.card-container', {
-      opacity: 0,
-      y: 20,
-      duration: 0.5
-    });
-  }, []);
+
 
   const onSubmit = async (data: SecondPasswordFormData) => {
     try {
@@ -68,7 +62,7 @@ export default function SecondPasswordPage() {
           <CardContent className="px-8 pb-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-lg">Mật khẩu cấp 2</Label>
+                <Label htmlFor="password" className="text-lg text-white">Mật khẩu cấp 2</Label>
                 <Input
                   id="password"
                   type="password"
@@ -80,7 +74,7 @@ export default function SecondPasswordPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-lg">Xác nhận mật khẩu</Label>
+                <Label htmlFor="confirmPassword" className="text-lg text-white">Xác nhận mật khẩu</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -92,13 +86,13 @@ export default function SecondPasswordPage() {
                 )}
               </div>
               <Button
-                type="submit"
-                className="w-full h-12 text-lg rounded-xl border-2"
+                customVariant="outline"
+                className="w-full h-12 text-lg rounded-xl bg-white hover:bg-gray-100 text-black font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Icons.spinner className="mr-2 h-5 w-5 animate-spin" />
+                    <Icons.spinner className="mr-2 h-5 w-5 animate-spin text-black" />
                     Đang xử lý...
                   </>
                 ) : (

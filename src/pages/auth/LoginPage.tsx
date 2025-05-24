@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 
 const loginSchema = z.object({
     email: z.string().email('Email không hợp lệ'),
@@ -19,6 +20,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const {
         register,
@@ -71,25 +73,38 @@ export default function LoginPage() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-lg">Mật khẩu</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    {...register('password')}
-                                    className={`${errors.password ? 'border-red-500' : ''} h-12 text-lg rounded-xl`} 
-                                />
+                                <Label htmlFor="password" className="text-lg text-white">Mật khẩu</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        {...register('password')}
+                                        className={`${errors.password ? 'border-red-500' : ''} h-12 text-lg rounded-xl pr-10`} 
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                    >
+                                        {showPassword ? (
+                                            <EyeInvisibleOutlined className="text-gray-500 text-xl" />
+                                        ) : (
+                                            <EyeOutlined className="text-gray-500 text-xl" />
+                                        )}
+                                    </button>
+                                </div>
                                 {errors.password && (
                                     <p className="text-sm text-red-500">{errors.password.message}</p>
                                 )}
                             </div>
                             <Button
-                                type="submit"
-                                className="w-full h-12 text-lg rounded-xl border-2" 
+                                customVariant="outline"
+                                className="w-full h-12 text-lg rounded-xl bg-white hover:bg-gray-100 text-black font-semibold" 
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
                                     <>
-                                        <Icons.spinner className="mr-2 h-5 w-5 animate-spin" /> 
+                                        <Icons.spinner className="mr-2 h-5 w-5 animate-spin text-black" /> 
                                         Đang đăng nhập...
                                     </>
                                 ) : (
