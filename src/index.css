@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 .logo-gradient {
   background: linear-gradient(45deg, #FF6B6B, #4ECDC4);

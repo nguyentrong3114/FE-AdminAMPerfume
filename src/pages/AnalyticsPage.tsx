@@ -5,7 +5,9 @@ import { LineChart } from "@/components/charts/line-chart"
 import { BarChart } from "@/components/charts/bar-chart"
 import { PieChart } from "@/components/charts/pie-chart"
 import { AreaChart } from "@/components/charts/area-chart"
-
+import { useQuery } from "@tanstack/react-query"
+import { AnalyticService } from "@/services/analyticService"
+import { useState } from "react"
 export default function AnalyticsPage() {
   const salesData = {
     labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
@@ -58,6 +60,10 @@ export default function AnalyticsPage() {
       },
     ],
   }
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["analytics"],
+    queryFn: AnalyticService.getAnalytics,
+  });
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
@@ -70,7 +76,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng doanh số</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">350,000</div>
+            <div className="text-2xl font-bold">{data?.totalSales}</div>
           </CardContent>
         </Card>
         <Card>
@@ -78,7 +84,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng doanh thu</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">25,000,000,000đ</div>
+            <div className="text-2xl font-bold">{data?.totalIncome} USD</div>
           </CardContent>
         </Card>
         <Card>
@@ -86,7 +92,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng đơn hàng</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12,500</div>
+            <div className="text-2xl font-bold">{data?.totalOrder}</div>
           </CardContent>
         </Card>
         <Card>
@@ -94,7 +100,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng người dùng</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,850</div>
+            <div className="text-2xl font-bold">{data?.totalUser}</div>
           </CardContent>
         </Card>
       </div>
