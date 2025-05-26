@@ -5,10 +5,73 @@ import { LineChart } from "@/components/charts/line-chart"
 import { BarChart } from "@/components/charts/bar-chart"
 import { PieChart } from "@/components/charts/pie-chart"
 import { AreaChart } from "@/components/charts/area-chart"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { AnalyticService } from "@/services/analyticService"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { DatePicker, Select, Space, Button, message } from "antd"
+import dayjs from "dayjs"
+
+const { RangePicker } = DatePicker
+
 export default function AnalyticsPage() {
+  const [dateSearchType, setDateSearchType] = useState<'all' | 'single' | 'range'>('all')
+  const [searchDate, setSearchDate] = useState<dayjs.Dayjs | null>(null)
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null])
+  const [analyticsData, setAnalyticsData] = useState(null)
+
+  const { data: initialData } = useQuery({
+    queryKey: ["analytics-initial"],
+    queryFn: () => AnalyticService.getAnalytics(),
+    staleTime: Infinity
+  })
+  
+  const analyticsMutation = useMutation({
+    mutationFn: (dates: { startDate?: string, endDate?: string }) => {
+      return AnalyticService.postAnalytics(dates)
+    },
+    onSuccess: (data) => {
+      setAnalyticsData(data)
+    }
+  })
+  
+  useEffect(() => {
+    if (initialData) {
+      setAnalyticsData(initialData)
+      console.log(initialData)
+    }
+  }, [initialData])
+
+  const handleSearch = () => {
+    if (dateSearchType === 'single') {
+      if (!searchDate) {
+        message.warning('Vui lòng chọn ngày')
+        return
+      }
+      const formattedDate = searchDate.format('YYYY-MM-DD')
+      analyticsMutation.mutate({
+        startDate: formattedDate,
+        endDate: formattedDate
+      })
+    } else if (dateSearchType === 'range') {
+      if (!dateRange[0] || !dateRange[1]) {
+        message.warning('Vui lòng chọn khoảng ngày')
+        return
+      }
+      analyticsMutation.mutate({
+        startDate: dateRange[0].format('YYYY-MM-DD'),
+        endDate: dateRange[1].format('YYYY-MM-DD')
+      })
+    } else if (dateSearchType === 'all') {
+      // Gọi lại GET /analytics (mặc định 1 năm)
+      AnalyticService.getAnalytics().then((data) => {
+        setAnalyticsData(data)
+      }).catch(() => {
+        message.error("Không thể tải dữ liệu phân tích.")
+      })
+    }
+  }
+
+
   const salesData = {
     labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
     datasets: [
@@ -60,15 +123,40 @@ export default function AnalyticsPage() {
       },
     ],
   }
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["analytics"],
-    queryFn: AnalyticService.getAnalytics,
-  });
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Phân tích</h2>
+        <Space>
+          <Select
+            value={dateSearchType}
+            onChange={setDateSearchType}
+            style={{ width: 120 }}
+            options={[
+              { value: 'all', label: 'Tất cả' },
+              { value: 'single', label: 'Ngày' },
+              { value: 'range', label: 'Khoảng ngày' }
+            ]}
+          />
+          {dateSearchType === 'single' && (
+            <DatePicker
+              value={searchDate}
+              onChange={setSearchDate}
+              placeholder="Chọn ngày"
+            />
+          )}
+          {dateSearchType === 'range' && (
+            <RangePicker
+              value={dateRange}
+              onChange={(dates) => setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])}
+              placeholder={['Từ ngày', 'Đến ngày']}
+            />
+          )}
+          <Button type="primary" onClick={handleSearch}>
+            Tìm kiếm
+          </Button>
+        </Space>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -76,7 +164,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng doanh số</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.totalSales}</div>
+            <div className="text-2xl font-bold">{analyticsData?.totalOrders}</div>
           </CardContent>
         </Card>
         <Card>
@@ -84,7 +172,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng doanh thu</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.totalIncome} USD</div>
+            <div className="text-2xl font-bold">{analyticsData?.totalIncome} USD</div>
           </CardContent>
         </Card>
         <Card>
@@ -92,7 +180,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng đơn hàng</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.totalOrder}</div>
+            <div className="text-2xl font-bold">{analyticsData?.totalProductsSold}</div>
           </CardContent>
         </Card>
         <Card>
@@ -100,7 +188,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium">Tổng người dùng</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.totalUser}</div>
+            <div className="text-2xl font-bold">{analyticsData?.totalUsers}</div>
           </CardContent>
         </Card>
       </div>
@@ -142,4 +230,4 @@ export default function AnalyticsPage() {
       </div>
     </div>
   )
-} 
+}

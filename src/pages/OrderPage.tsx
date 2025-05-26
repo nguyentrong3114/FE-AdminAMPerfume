@@ -13,13 +13,15 @@ import { Line } from '@ant-design/plots';
 import {
   SearchOutlined,
   PlusOutlined,
-  EditOutlined
+  EditOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
 import { OrderModal } from '@/components/modals/OrderModal';
 import gsap from 'gsap';
 import { useQuery } from '@tanstack/react-query';
 import { OrderService } from '@/services/orderService';
 import type { OrderListResponse, OrderDTO } from '@/types/Order';
+import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
@@ -47,6 +49,9 @@ export default function OrderPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderFormData>();
   const [pagination, setPagination] = useState({ current: 1, size: 10 });
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
+  const [searchDate, setSearchDate] = useState<dayjs.Dayjs | null>(null);
+  const [dateSearchType, setDateSearchType] = useState<'single' | 'range'>('single');
 
   useEffect(() => {
     gsap.from('.page-content', {
@@ -58,9 +63,27 @@ export default function OrderPage() {
   }, []);
 
   const { data, isLoading } = useQuery<OrderListResponse>({
-    queryKey: ['orders', pagination.current, pagination.size, searchText],
-    queryFn: () =>
-      OrderService.getOrders(pagination.current, pagination.size, searchText),
+    queryKey: ['orders', pagination.current, pagination.size, searchText, dateRange, searchDate],
+    queryFn: () => {
+      if (dateSearchType === 'range') {
+        const [startDate, endDate] = dateRange;
+        return OrderService.getOrders(
+          pagination.current,
+          pagination.size,
+          searchText,
+          startDate?.format('YYYY-MM-DD'),
+          endDate?.format('YYYY-MM-DD')
+        );
+      } else {
+        return OrderService.getOrders(
+          pagination.current,
+          pagination.size,
+          searchText,
+          searchDate?.format('YYYY-MM-DD'),
+          searchDate?.format('YYYY-MM-DD')
+        );
+      }
+    },
     staleTime: 0
   });
 
@@ -191,7 +214,7 @@ export default function OrderPage() {
         </Card>
 
         <Card title="Quản lý đơn hàng">
-          <Space className="mb-4" size="large">
+          <Space className="mb-4" size="large" wrap>
             <Input
               placeholder="Tìm kiếm đơn hàng..."
               prefix={<SearchOutlined />}
@@ -212,7 +235,36 @@ export default function OrderPage() {
                 { value: 'cancelled', label: 'Đã hủy' }
               ]}
             />
-            <RangePicker />
+            <Select
+              value={dateSearchType}
+              onChange={(value) => {
+                setDateSearchType(value);
+                setSearchDate(null);
+                setDateRange([null, null]);
+              }}
+              style={{ width: 200 }}
+              options={[
+                { value: 'single', label: 'Tìm theo ngày cụ thể' },
+                { value: 'range', label: 'Tìm theo khoảng thời gian' }
+              ]}
+            />
+            {dateSearchType === 'single' ? (
+              <DatePicker
+                value={searchDate}
+                onChange={(date) => setSearchDate(date)}
+                format="DD/MM/YYYY"
+                placeholder="Chọn ngày"
+                style={{ width: 200 }}
+              />
+            ) : (
+              <RangePicker 
+                value={dateRange}
+                onChange={(dates) => setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])}
+                format="DD/MM/YYYY"
+                placeholder={['Từ ngày', 'Đến ngày']}
+                style={{ width: 300 }}
+              />
+            )}
             <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
               Thêm đơn hàng
             </Button>
