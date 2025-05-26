@@ -12,3 +12,4 @@
 - [GSAP](https://gsap.com/)
 - [Ant Design](https://ant.design/)
 - [ESLint](https://eslint.org/) + [Type-aware Rules](https://typescript-eslint.io/linting/typed-linting/)
+- [dayjs]
