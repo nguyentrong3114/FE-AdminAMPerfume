@@ -14,17 +14,22 @@ import dayjs from "dayjs"
 const { RangePicker } = DatePicker
 
 export default function AnalyticsPage() {
-  const [dateSearchType, setDateSearchType] = useState<'all' | 'single' | 'range'>('all')
-  const [searchDate, setSearchDate] = useState<dayjs.Dayjs | null>(null)
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null])
-  const [analyticsData, setAnalyticsData] = useState(null)
+  const [selectedYear, setSelectedYear] = useState<dayjs.Dayjs | null>(null)
+  const [analyticsData, setAnalyticsData] = useState<any>(null)
 
   const { data: initialData } = useQuery({
     queryKey: ["analytics-initial"],
     queryFn: () => AnalyticService.getAnalytics(),
     staleTime: Infinity
   })
-  
+
+  const { data: chartData } = useQuery({
+    queryKey: ["analytics-chart"],
+    queryFn: () => AnalyticService.getChartDataByYear(selectedYear?.year() ?? dayjs().year()),
+    staleTime: Infinity,
+  })
+
   const analyticsMutation = useMutation({
     mutationFn: (dates: { startDate?: string, endDate?: string }) => {
       return AnalyticService.postAnalytics(dates)
@@ -33,74 +38,131 @@ export default function AnalyticsPage() {
       setAnalyticsData(data)
     }
   })
-  
+
   useEffect(() => {
     if (initialData) {
       setAnalyticsData(initialData)
-      console.log(initialData)
+      updateChartData(chartData)
     }
-  }, [initialData])
+  }, [chartData, initialData])
 
-  const handleSearch = () => {
-    if (dateSearchType === 'single') {
-      if (!searchDate) {
-        message.warning('Vui lòng chọn ngày')
-        return
-      }
-      const formattedDate = searchDate.format('YYYY-MM-DD')
-      analyticsMutation.mutate({
-        startDate: formattedDate,
-        endDate: formattedDate
-      })
-    } else if (dateSearchType === 'range') {
-      if (!dateRange[0] || !dateRange[1]) {
-        message.warning('Vui lòng chọn khoảng ngày')
-        return
-      }
-      analyticsMutation.mutate({
-        startDate: dateRange[0].format('YYYY-MM-DD'),
-        endDate: dateRange[1].format('YYYY-MM-DD')
-      })
-    } else if (dateSearchType === 'all') {
-      // Gọi lại GET /analytics (mặc định 1 năm)
-      AnalyticService.getAnalytics().then((data) => {
-        setAnalyticsData(data)
-      }).catch(() => {
-        message.error("Không thể tải dữ liệu phân tích.")
-      })
-    }
+  const updateChartData = (data: any) => {
+    if (!data) return
+
+    // 👉 Doanh số
+    const productSold = data.productSold ?? []
+    setSalesData({
+      labels: productSold.map((item: any) => `Tháng ${item.month}`),
+      datasets: [{
+        label: "Doanh số",
+        data: productSold.map((item: any) => item.productCount),
+        borderColor: "rgb(75, 192, 192)",
+        backgroundColor: "rgba(75, 192, 192, 0.5)",
+      }]
+    })
+
+    // 👉 Doanh thu
+    const revenue = data.revenue ?? []
+    setRevenueData({
+      labels: revenue.map((item: any) => `Tháng ${item.month}`),
+      datasets: [{
+        label: "Doanh thu",
+        data: revenue.map((item: any) => item.revenue),
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      }]
+    })
+
+    // 👉 Người dùng mới
+    const users = data.totalUsers ?? []
+    setUserData({
+      labels: users.map((item: any) => `Tháng ${item.month}`),
+      datasets: [{
+        label: "Người dùng mới",
+        data: users.map((item: any) => item.totalUsers),
+        borderColor: "rgb(53, 162, 235)",
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      }]
+    })
+
+    // 👉 Phân bố thương hiệu
+    const brands = data.totalProductByBrand ?? []
+    setCategoryData({
+      labels: brands.map((item: any) => item.brandName),
+      datasets: [{
+        data: brands.map((item: any) => item.productCount),
+        backgroundColor: [
+          "rgb(255, 99, 132)",
+          "rgb(54, 162, 235)",
+          "rgb(255, 206, 86)",
+          "rgb(75, 192, 192)",
+          "rgb(153, 102, 255)",
+        ],
+      }]
+    })
   }
 
+  const handleAnalyticsSearch = () => {
+    if (!dateRange[0] || !dateRange[1]) {
+      message.warning('Vui lòng chọn khoảng thời gian')
+      return
+    }
 
-  const salesData = {
-    labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
+    const payload = {
+      startDate: dateRange[0].format('YYYY-MM-DD'),
+      endDate: dateRange[1].format('YYYY-MM-DD')
+    }
+    analyticsMutation.mutate(payload)
+  }
+
+  const handleChartSearch = () => {
+    if (!selectedYear) {
+      message.warning('Vui lòng chọn năm')
+      return
+    }
+
+    const startDate = selectedYear.startOf('year').format('YYYY-MM-DD')
+    const endDate = selectedYear.endOf('year').format('YYYY-MM-DD')
+    const payload = {
+      startDate,
+      endDate
+    }
+    AnalyticService.getChartDataByYear(selectedYear?.year() ?? dayjs().year()).then((data) => {
+      updateChartData(data)
+    }).catch(() => {
+      message.error("Không thể tải dữ liệu biểu đồ.")
+    })
+  }
+
+  const [salesData, setSalesData] = useState({
+    labels: [],
     datasets: [
       {
         label: "Doanh số",
-        data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 40000, 38000, 45000],
+        data: [],
         borderColor: "rgb(75, 192, 192)",
         backgroundColor: "rgba(75, 192, 192, 0.5)",
       },
     ],
-  }
+  })
 
-  const revenueData = {
-    labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
+  const [revenueData, setRevenueData] = useState({
+    labels: [],
     datasets: [
       {
         label: "Doanh thu",
-        data: [1000000, 1500000, 1200000, 2000000, 1800000, 2500000, 2200000, 3000000, 2800000, 3500000, 3200000, 4000000],
+        data: [],
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
     ],
-  }
+  })
 
-  const categoryData = {
-    labels: ["Nước hoa", "Son môi", "Kem dưỡng", "Sữa rửa mặt", "Tẩy trang"],
+  const [categoryData, setCategoryData] = useState({
+    labels: [],
     datasets: [
       {
-        data: [30, 25, 20, 15, 10],
+        data: [],
         backgroundColor: [
           "rgb(255, 99, 132)",
           "rgb(54, 162, 235)",
@@ -110,51 +172,42 @@ export default function AnalyticsPage() {
         ],
       },
     ],
-  }
+  })
 
-  const userData = {
-    labels: ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
+  const [userData, setUserData] = useState({
+    labels: [],
     datasets: [
       {
         label: "Người dùng mới",
-        data: [100, 150, 120, 200, 180, 250, 220, 300, 280, 350, 320, 400],
+        data: [],
         borderColor: "rgb(53, 162, 235)",
         backgroundColor: "rgba(53, 162, 235, 0.5)",
       },
     ],
-  }
+  })
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Phân tích</h2>
         <Space>
-          <Select
-            value={dateSearchType}
-            onChange={setDateSearchType}
-            style={{ width: 120 }}
-            options={[
-              { value: 'all', label: 'Tất cả' },
-              { value: 'single', label: 'Ngày' },
-              { value: 'range', label: 'Khoảng ngày' }
-            ]}
+          <RangePicker
+            value={dateRange}
+            onChange={(dates) => setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])}
+            placeholder={['Từ ngày', 'Đến ngày']}
           />
-          {dateSearchType === 'single' && (
-            <DatePicker
-              value={searchDate}
-              onChange={setSearchDate}
-              placeholder="Chọn ngày"
-            />
-          )}
-          {dateSearchType === 'range' && (
-            <RangePicker
-              value={dateRange}
-              onChange={(dates) => setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])}
-              placeholder={['Từ ngày', 'Đến ngày']}
-            />
-          )}
-          <Button type="primary" onClick={handleSearch}>
-            Tìm kiếm
+          <Button type="primary" onClick={handleAnalyticsSearch}>
+            Tìm kiếm thống kê
+          </Button>
+
+          <DatePicker
+            value={selectedYear}
+            onChange={setSelectedYear}
+            picker="year"
+            placeholder="Chọn năm cho biểu đồ"
+          />
+          <Button type="primary" onClick={handleChartSearch}>
+            Tìm kiếm biểu đồ
           </Button>
         </Space>
       </div>

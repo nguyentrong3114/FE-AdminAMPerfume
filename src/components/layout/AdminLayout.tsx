@@ -30,6 +30,7 @@ const menuItems = [
     { label: "Dashboard", key: "/", icon: <HomeOutlined /> },
     { label: "Products", key: "/products", icon: <ShoppingOutlined /> },
     { label: "Users", key: "/users", icon: <UserOutlined /> },
+    { label: "Categories", key: "/categories", icon: <TagOutlined /> },
     { label: "Orders", key: "/orders", icon: <ShoppingCartOutlined /> },
     { label: "Analytics", key: "/analytics", icon: <BarChartOutlined /> },
     { label: "Reports", key: "/reports", icon: <FileOutlined /> },
@@ -37,7 +38,6 @@ const menuItems = [
     { label: "Messages", key: "/messages", icon: <MessageOutlined /> },
     { label: "Promotions", key: "/promotions", icon: <GiftOutlined /> },
     { label: "Calendar", key: "/calendar", icon: <CalendarOutlined /> },
-    { label: "Categories", key: "/categories", icon: <TagOutlined /> },
     { label: "Notifications", key: "/notifications", icon: <BellOutlined /> }
 ];
 const notifications = [{

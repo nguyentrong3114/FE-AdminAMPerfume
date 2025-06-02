@@ -51,16 +51,8 @@ export default function OrderPage() {
   const [pagination, setPagination] = useState({ current: 1, size: 10 });
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
   const [searchDate, setSearchDate] = useState<dayjs.Dayjs | null>(null);
-  const [dateSearchType, setDateSearchType] = useState<'single' | 'range'>('single');
+  const [dateSearchType,setDateSearchType] = useState<'single' | 'range'>('single');
 
-  useEffect(() => {
-    gsap.from('.page-content', {
-      opacity: 0,
-      y: 20,
-      duration: 0.5,
-      ease: 'power2.out'
-    });
-  }, []);
 
   const { data, isLoading } = useQuery<OrderListResponse>({
     queryKey: ['orders', pagination.current, pagination.size, searchText, dateRange, searchDate],
@@ -148,24 +140,18 @@ export default function OrderPage() {
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
+      dataIndex: 'isPaid',
+      key: 'isPaid',
+      render: (isPaid: boolean) => {
         const map: Record<string, string> = {
-          pending: 'Chờ xử lý',
-          processing: 'Đang xử lý',
-          shipped: 'Đang giao hàng',
-          delivered: 'Đã giao hàng',
-          cancelled: 'Đã hủy'
+          true: 'Đã thanh toán',
+          false: 'Chưa thanh toán'
         };
         const colorMap: Record<string, string> = {
-          pending: 'default',
-          processing: 'blue',
-          shipped: 'orange',
-          delivered: 'green',
-          cancelled: 'red'
+          true: 'green',
+          false: 'red'
         };
-        return <Tag color={colorMap[status]}>{map[status] || status}</Tag>;
+        return <Tag color={colorMap[isPaid]}>{map[isPaid] || isPaid}</Tag>;
       }
     },
     {

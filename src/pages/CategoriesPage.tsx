@@ -4,41 +4,32 @@ import { Card, Table, Button, Row, Col, Statistic, Space, Badge, Modal, Form, In
 import { PlusOutlined, TagOutlined } from "@ant-design/icons"
 import { AreaChart } from "@/components/charts/area-chart"
 import { useState } from "react"
+import { categoriesService } from "@/services/categoryService"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import type { Category } from "@/types/Category"
+import { data } from "react-router-dom"
 
 export default function CategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [form] = Form.useForm()
-
-  const categories = [
-    {
-      id: "1",
-      name: "Nước hoa",
-      description: "Các loại nước hoa cao cấp",
-      products: 150,
-      status: "active",
-      createdAt: "2024-01-01",
-    },
-    {
-      id: "2",
-      name: "Son môi",
-      description: "Son môi các loại",
-      products: 80,
-      status: "active",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "3",
-      name: "Kem dưỡng",
-      description: "Kem dưỡng da mặt",
-      products: 120,
-      status: "active",
-      createdAt: "2024-02-01",
-    },
-  ]
+  const { data: categoriesData, isLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoriesService.getCategories
+  })
+  const queryClient = useQueryClient()
+  
+  const createCategoryMutation = useMutation({
+    mutationFn: categoriesService.createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+      setIsModalOpen(false)
+      form.resetFields()
+    }
+  })
 
   const columns = [
     {
-      title: "Tên danh mục",
+      title: "Tên danh mục", 
       dataIndex: "name",
       key: "name",
       render: (name: string) => (
@@ -49,32 +40,26 @@ export default function CategoriesPage() {
       ),
     },
     {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
+      title: "Slug",
+      dataIndex: "slug", 
+      key: "slug",
       ellipsis: true,
     },
     {
       title: "Số sản phẩm",
-      dataIndex: "products",
-      key: "products",
+      dataIndex: "productCount",
+      key: "productCount",
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
+      dataIndex: "isActive",
+      key: "isActive", 
+      render: (isActive: boolean) => (
         <Badge
-          status={status === "active" ? "success" : "default"}
-          text={status === "active" ? "Hoạt động" : "Không hoạt động"}
+          status={isActive ? "success" : "default"}
+          text={isActive ? "Hoạt động" : "Không hoạt động"}
         />
       ),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
     },
     {
       title: "Thao tác",
@@ -102,8 +87,7 @@ export default function CategoriesPage() {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
-      console.log(values)
-      setIsModalOpen(false)
+      createCategoryMutation.mutate(values as Category)
     } catch (error) {
       console.error("Validate Failed:", error)
     }
@@ -124,7 +108,7 @@ export default function CategoriesPage() {
           <Card>
             <Statistic
               title="Tổng danh mục"
-              value={12}
+              value={categoriesData?.totalCategories || 0}
             />
           </Card>
         </Col>
@@ -132,7 +116,7 @@ export default function CategoriesPage() {
           <Card>
             <Statistic
               title="Danh mục hoạt động"
-              value={10}
+                value={categoriesData?.totalActiveCategories || 0}
             />
           </Card>
         </Col>
@@ -140,15 +124,15 @@ export default function CategoriesPage() {
           <Card>
             <Statistic
               title="Tổng sản phẩm"
-              value={350}
+              value={categoriesData?.totalProducts || 0}
             />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <Statistic
-              title="Danh mục mới"
-              value={2}
+              title="Danh mục không hoạt động"
+              value={categoriesData?.totalInactiveCategories || 0}
             />
           </Card>
         </Col>
@@ -159,8 +143,9 @@ export default function CategoriesPage() {
       <Card>
         <Table
           columns={columns}
-          dataSource={categories}
+          dataSource={categoriesData?.categories}
           rowKey="id"
+          loading={isLoading}
         />
       </Card>
       <Modal
@@ -168,6 +153,7 @@ export default function CategoriesPage() {
         open={isModalOpen}
         onOk={handleSubmit}
         onCancel={() => setIsModalOpen(false)}
+        confirmLoading={createCategoryMutation.isPending}
       >
         <Form form={form} layout="vertical">
           <Form.Item
@@ -188,4 +174,4 @@ export default function CategoriesPage() {
       </Modal>
     </div>
   )
-} 
+}

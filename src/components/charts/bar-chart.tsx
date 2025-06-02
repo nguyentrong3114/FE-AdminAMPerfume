@@ -52,6 +52,7 @@ export function BarChart({
   const options: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
+    
     plugins: {
       legend: {
         display: showLegend,
@@ -67,6 +68,11 @@ export function BarChart({
         stacked,
       },
       y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          precision: 0,
+        },
         stacked,
       },
     },
